@@ -70,12 +70,13 @@ fun TerminalView(
 
     val regular = remember { Typeface.createFromAsset(context.assets, FONT_PATH) }
     val bold = remember { Typeface.createFromAsset(context.assets, FONT_PATH_BOLD) }
-    val fontSizePx = with(density) { 13.sp.toPx() }
+    val fontPx = with(density) { 13.sp.toPx() }
 
     val accessory = remember { AccessoryState() }
     var pane by remember { mutableStateOf<PaneSession?>(null) }
     var keyboardVisible by remember { mutableStateOf(true) }
     var canCopy by remember { mutableStateOf(false) }
+    val surfaceRef = remember { Ref<TerminalSurfaceView>() }
 
     val owner = owners[paneID]
     val isOwnedBySelf = remember(owner, myID) {
@@ -114,13 +115,12 @@ fun TerminalView(
     Column(modifier.background(palette.background)) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             // Surface
-            val surfaceRef = remember { Ref<TerminalSurfaceView>() }
             AndroidView(
                 factory = { ctx ->
                     TerminalSurfaceView(ctx).apply {
                         typefaceRegular = regular
                         typefaceBold = bold
-                        fontSizePx = fontSizePx
+                        fontSizePx = fontPx
                         modifierProvider = { accessory.consume() }
                         onSelectionChanged = { canCopy = it }
                         surfaceRef.value = this

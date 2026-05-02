@@ -16,6 +16,7 @@ import com.muxy.app.net.TransportEvent
 import com.muxy.app.net.newRequestId
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalOutput
+import com.termux.terminal.TextStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -163,9 +164,9 @@ class PaneSession(
     fun applyTheme(fg: Long, bg: Long, palette: List<Long>) {
         synchronized(emulator) {
             val colors = emulator.mColors.mCurrentColors
-            colors[com.termux.terminal.TextStyle.COLOR_INDEX_FOREGROUND] = (0xFF000000.toInt()) or (fg.toInt() and 0xFFFFFF)
-            colors[com.termux.terminal.TextStyle.COLOR_INDEX_BACKGROUND] = (0xFF000000.toInt()) or (bg.toInt() and 0xFFFFFF)
-            colors[com.termux.terminal.TextStyle.COLOR_INDEX_CURSOR] = (0xFF000000.toInt()) or (fg.toInt() and 0xFFFFFF)
+            colors[TextStyle.COLOR_INDEX_FOREGROUND] = (0xFF000000.toInt()) or (fg.toInt() and 0xFFFFFF)
+            colors[TextStyle.COLOR_INDEX_BACKGROUND] = (0xFF000000.toInt()) or (bg.toInt() and 0xFFFFFF)
+            colors[TextStyle.COLOR_INDEX_CURSOR] = (0xFF000000.toInt()) or (fg.toInt() and 0xFFFFFF)
             if (palette.size >= 16) {
                 for (i in 0 until 16) {
                     colors[i] = (0xFF000000.toInt()) or (palette[i].toInt() and 0xFFFFFF)

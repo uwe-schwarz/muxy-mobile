@@ -1,6 +1,7 @@
 package com.muxy.app.ui.terminal
 
 import android.content.Context
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -66,7 +67,7 @@ class AccessoryState {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AccessoryBar(
     state: AccessoryState,
@@ -138,6 +139,7 @@ fun AccessoryBar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Key(label: String, foreground: Color, onClick: () -> Unit) {
     Box(
@@ -153,6 +155,7 @@ private fun Key(label: String, foreground: Color, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun IconKey(icon: androidx.compose.ui.graphics.vector.ImageVector, foreground: Color, contentDescription: String, onClick: () -> Unit) {
     Box(
@@ -166,7 +169,7 @@ private fun IconKey(icon: androidx.compose.ui.graphics.vector.ImageVector, foreg
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun ModifierKey(
     active: AccessoryModifier,
