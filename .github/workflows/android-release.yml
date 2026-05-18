@@ -44,13 +44,18 @@ on:
         required: false
 
 jobs:
-  release-android:
+  build-android:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
-      contents: write
+      contents: read
     env:
       PACKAGE_NAME: com.muxy.app
+    outputs:
+      version_name: ${{ steps.validate.outputs.version_name }}
+      version_code: ${{ steps.validate.outputs.version_code }}
+      track: ${{ steps.validate.outputs.track }}
+      artifact_name: ${{ steps.validate.outputs.artifact_name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -83,6 +88,7 @@ jobs:
           echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
           echo "track=$TRACK" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=android-release-$VERSION_NAME-$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -148,10 +154,17 @@ jobs:
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-release-${{ steps.validate.outputs.version_name }}-${{ steps.validate.outputs.version_code }}
+          name: ${{ steps.validate.outputs.artifact_name }}
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
+  play-upload:
+    needs: build-android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
       - name: Check Play upload secret
         id: play_secret
         env:
@@ -164,21 +177,39 @@ jobs:
             echo "PLAY_SERVICE_ACCOUNT_JSON not set; skipping Play upload."
           fi
 
+      - name: Download AAB artifact
+        if: steps.play_secret.outputs.present == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-android.outputs.artifact_name }}
+          path: aab
+
       - name: Upload to Play Store
         if: steps.play_secret.outputs.present == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.muxy.app
-          releaseFiles: android/app/build/outputs/bundle/release/*.aab
-          track: ${{ steps.validate.outputs.track }}
+          releaseFiles: aab/*.aab
+          track: ${{ needs.build-android.outputs.track }}
           status: draft
-          changesNotSentForReview: ${{ steps.validate.outputs.track == 'production' }}
+
+  release-tag:
+    needs: [build-android, play-upload]
+    if: ${{ !inputs.skip_release_tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create GitHub Release
-        if: ${{ !inputs.skip_release_tag }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: ${{ needs.build-android.outputs.version_name }}
         run: |
           PREV_TAG=$(gh release list \
             --repo "${{ github.repository }}" \
@@ -200,9 +231,9 @@ jobs:
             echo "- No Android-facing changes since ${PREV_TAG:-initial release}" > notes.md
           fi
 
-          gh release create "android-v${{ steps.validate.outputs.version_name }}" \
+          gh release create "android-v$VERSION_NAME" \
             --repo "${{ github.repository }}" \
-            --title "Android v${{ steps.validate.outputs.version_name }}" \
+            --title "Android v$VERSION_NAME" \
             --notes-file notes.md \
             --latest=false \
             --target "${{ github.sha }}"
