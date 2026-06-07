@@ -4,7 +4,8 @@ import { type LayoutChangeEvent, Pressable, ScrollView, StyleSheet, Text, View }
 
 import type { TabWithArea } from '@/state';
 import { useTokens } from '@/theme';
-import type { TabKind } from '@/transport';
+
+import { tabKindMeta } from './tabKind';
 
 type Props = {
   tabs: TabWithArea[];
@@ -99,6 +100,7 @@ export const WorkspaceTabStrip = forwardRef<WorkspaceTabStripHandle, Props>(func
         {tabs.map(({ tab, areaId }) => {
           const active = tab.id === visiblyActiveId;
           const closing = tab.id === closingTabId;
+          const meta = tabKindMeta(tab.kind);
           return (
             <Pressable
               key={tab.id}
@@ -114,7 +116,7 @@ export const WorkspaceTabStrip = forwardRef<WorkspaceTabStripHandle, Props>(func
                 },
               ]}>
               <Ionicons
-                name={iconForKind(tab.kind)}
+                name={meta.icon}
                 size={14}
                 color={active ? tokens.accent.primary : tokens.text.muted}
               />
@@ -124,7 +126,7 @@ export const WorkspaceTabStrip = forwardRef<WorkspaceTabStripHandle, Props>(func
                   { color: active ? tokens.text.primary : tokens.text.secondary },
                 ]}
                 numberOfLines={1}>
-                {tab.title || labelForKind(tab.kind)}
+                {tab.title || meta.label}
               </Text>
               {tab.isPinned ? (
                 <Ionicons name="pin" size={12} color={tokens.text.muted} />
@@ -160,32 +162,6 @@ export const WorkspaceTabStrip = forwardRef<WorkspaceTabStripHandle, Props>(func
     </View>
   );
 });
-
-function iconForKind(kind: TabKind): keyof typeof Ionicons.glyphMap {
-  switch (kind) {
-    case 'terminal':
-      return 'terminal-outline';
-    case 'vcs':
-      return 'git-branch-outline';
-    case 'editor':
-      return 'document-text-outline';
-    case 'diffViewer':
-      return 'git-compare-outline';
-  }
-}
-
-function labelForKind(kind: TabKind): string {
-  switch (kind) {
-    case 'terminal':
-      return 'Terminal';
-    case 'vcs':
-      return 'VCS';
-    case 'editor':
-      return 'Editor';
-    case 'diffViewer':
-      return 'Diff';
-  }
-}
 
 const styles = StyleSheet.create({
   bar: {
