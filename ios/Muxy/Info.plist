@@ -13,6 +13,8 @@
 		<key>UIImageRespectsSafeAreaInsets</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Muxy connects to your desktop on the local network to control its terminal sessions.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_muxy._tcp</string>
