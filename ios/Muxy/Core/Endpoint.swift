@@ -11,8 +11,14 @@ nonisolated struct Endpoint: Equatable, Sendable {
         guard !trimmedHost.isEmpty else { return nil }
         var components = URLComponents()
         components.scheme = "ws"
-        components.host = trimmedHost
+        components.host = normalizedHost(trimmedHost)
         components.port = port
         return components.url
+    }
+
+    private func normalizedHost(_ host: String) -> String {
+        guard host.contains(":") else { return host }
+        guard !host.hasPrefix("[") else { return host }
+        return "[\(host)]"
     }
 }
